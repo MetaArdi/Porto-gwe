@@ -1,0 +1,257 @@
+{
+  "siteSettings": {
+    "title": "MetaArdi",
+    "description": "Portfolio Meta Ardi Setiawan - Software Engineer & Web Developer",
+    "faviconUrl": "/icon.png",
+    "brandName": "MetaArdi"
+  },
+  "about": {
+    "name": "Meta Ardi Setiawan",
+    "fullName": "Meta Ardi Setiawan",
+    "birthYear": "2004",
+    "words": [
+      "Software Engineer",
+      "Competitive Programmer",
+      "Problem Solver",
+      "Fullstack Developer",
+      "Lifelong Learner",
+      "Web Developer",
+      "AI Engineer"
+    ],
+    "bio": "Hi, my name is Meta Ardi Setiawan! I have a strong passion for programming and software engineering. I enjoy solving complex problems, building web applications, and learning new technologies. Whether it's crafting beautiful user interfaces or engineering robust backend systems, I love turning ideas into reality.",
+    "cvUrl": "#",
+    "avatarUrl": "/uploads/1786141730791-IMG_20260731_014555.png",
+    "avatarAspectRatio": "3/4",
+    "avatarFit": "cover",
+    "avatarPosition": "top",
+    "avatarSize": "medium"
+  },
+  "techStack": [
+    {
+      "id": "1",
+      "name": "React",
+      "category": "Frontend",
+      "iconName": "FaReact",
+      "iconUrl": "/assets/react.png"
+    },
+    {
+      "id": "3",
+      "name": "TypeScript",
+      "category": "Language",
+      "iconName": "SiTypescript",
+      "iconUrl": "/assets/tslogo.png"
+    },
+    {
+      "id": "4",
+      "name": "JavaScript",
+      "category": "Language",
+      "iconName": "IoLogoJavascript",
+      "iconUrl": "/assets/jslogo.png"
+    },
+    {
+      "id": "5",
+      "name": "Tailwind CSS",
+      "category": "Styling",
+      "iconName": "SiTailwindcss",
+      "iconUrl": "/assets/css.png"
+    },
+    {
+      "id": "6",
+      "name": "Node.js",
+      "category": "Backend",
+      "iconName": "RiNodejsLine",
+      "iconUrl": "/assets/node.png"
+    },
+    {
+      "id": "7",
+      "name": "Express.js",
+      "category": "Backend",
+      "iconName": "SiExpress",
+      "iconUrl": "/assets/express.png"
+    },
+    {
+      "id": "8",
+      "name": "MongoDB",
+      "category": "Database",
+      "iconName": "SiMongodb",
+      "iconUrl": "/assets/mongo.png"
+    },
+    {
+      "id": "9",
+      "name": "HTML5",
+      "category": "Frontend",
+      "iconName": "DiHtml5",
+      "iconUrl": "/assets/html.jpg"
+    },
+    {
+      "id": "10",
+      "name": "CSS3",
+      "category": "Styling",
+      "iconName": "FaCss3Alt",
+      "iconUrl": "/assets/css.png"
+    },
+    {
+      "id": "12",
+      "name": "Python",
+      "category": "Language",
+      "iconName": "FaPython",
+      "iconUrl": "/assets/python.jpg"
+    },
+    {
+      "id": "1786158860932",
+      "name": "Next.js",
+      "category": "Framework",
+      "iconUrl": "/uploads/1786158874569-image_2026-08-08_101434082.png"
+    },
+    {
+      "id": "1786158996456",
+      "name": "PHP",
+      "category": "Language",
+      "iconUrl": "/uploads/1786159002322-image_2026-08-08_101642277.png"
+    },
+    {
+      "id": "1786159127229",
+      "name": "Vue.js",
+      "category": "Framework",
+      "iconUrl": "/uploads/1786159139103-58482acecef1014c0b5e4a1e.png"
+    },
+    {
+      "id": "1786159157766",
+      "name": "Laravel",
+      "category": "Framework",
+      "iconUrl": "/uploads/1786159167867-image_2026-08-08_101927822.png"
+    },
+    {
+      "id": "1786159192976",
+      "name": "Postgre SQL",
+      "category": "Database",
+      "iconUrl": "/uploads/1786159211429-image_2026-08-08_102011380.png"
+    },
+    {
+      "id": "1786159228282",
+      "name": "MySQL",
+      "category": "Database",
+      "iconUrl": "/uploads/1786159237194-image_2026-08-08_102037151.png"
+    },
+    {
+      "id": "1786159303809",
+      "name": "Java",
+      "category": "Backend",
+      "iconUrl": "/uploads/1786159312200-image_2026-08-08_102152149.png"
+    },
+    {
+      "id": "1786159473701",
+      "name": "Docker",
+      "category": "Other",
+      "iconUrl": "/uploads/1786159497207-image_2026-08-08_102457137.png"
+    },
+    {
+      "id": "1786159636896",
+      "name": "AWS",
+      "category": "Other",
+      "iconUrl": "/uploads/1786159655469-image_2026-08-08_102735177.png"
+    },
+    {
+      "id": "1786159699524",
+      "name": "N8N",
+      "category": "Other",
+      "iconUrl": "/uploads/1786159710192-image_2026-08-08_102830156.png"
+    },
+    {
+      "id": "1786159735100",
+      "name": "Google Cloud Console",
+      "category": "Other",
+      "iconUrl": "/uploads/1786159749724-image_2026-08-08_102909684.png"
+    }
+  ],
+  "projects": [
+    {
+      "id": "1786142229887",
+      "title": "HaloTiket",
+      "description": "HaloTiket - An e-ticketing platform for ticketing events, concerts, festivals, and more.\nDeveloped using Laravel, Tailwind CSS, MySQL, PHP 8.x, Google APIs and Payment Gateways, PWA, and more.",
+      "link": "https://halotiket.com",
+      "githubLink": "#",
+      "imageUrl": "/uploads/1786142285224-Screenshot_2026-07-29_004320.png",
+      "tags": []
+    },
+    {
+      "id": "1786142520432",
+      "title": "Kedai Desain Kudus",
+      "description": "Kedai Desain Kudus - A website offering graphic design and digital printing services.\nDeveloped using native PHP, HTML 5, CSS, JS, and MySQL.",
+      "link": "https://kedaidesainkudus.infinityfree.me/?i=1",
+      "githubLink": "#",
+      "imageUrl": "/uploads/1786142550009-image_2026-08-08_054229008.png",
+      "tags": []
+    },
+    {
+      "id": "1786142694586",
+      "title": "Sistem Absensi Karyawan - Kedai Samarata",
+      "description": "This is an employee attendance system that uses a GPS location lock. Employees can only clock in if they are at a location specified by the administrator. It also includes permit, leave, and overtime features, as well as payroll.\nDeveloped using the CodeIgniter Framework, MySQL, Mock Location Detection, and Geofencing.",
+      "link": "https://sistem-absensi-karyawan-qr.is-great.net/?i=1",
+      "githubLink": "#",
+      "imageUrl": "/uploads/1786142814605-image_2026-08-08_054653854.png",
+      "tags": []
+    },
+    {
+      "id": "1786144509534",
+      "title": "AWARE - Industrial Health & Safety Intelligence",
+      "description": "AI-Based Workplace Assessment for Readiness and Safety. A web-based fit-to-work screening system that detects employee fatigue in under 30 seconds using Computer Vision (EAR/MAR analysis via MediaPipe) combined with self-reported health data to prevent workplace accidents.",
+      "link": "https://aware-app-new.vercel.app/login",
+      "githubLink": "https://github.com/MetaArdi/Aware-App-New",
+      "imageUrl": "/uploads/1786144559239-image_2026-08-08_061558574.png",
+      "tags": []
+    },
+    {
+      "id": "1786152079107",
+      "title": "Sistem Inventarisasi Desa Mijen",
+      "description": "Mijen Village Asset Inventory System is used for village asset data collection.\nDeveloped using native PHP, Tailwind CSS, and JS, with an additional Opname feature.",
+      "link": "#",
+      "githubLink": "https://github.com/MetaArdi/SIPADES",
+      "imageUrl": "/uploads/1786152098586-image_2026-08-08_082133678.png",
+      "tags": []
+    },
+    {
+      "id": "1786158383281",
+      "title": "Sistem E-Learning SMPN 1 Mayong",
+      "description": "It's an e-learning system for distance learning, allowing you to send and receive assignments, practice questions, and school exams.\nDeveloped using CodeIgniter 3, with MySQL and several other components.",
+      "link": "#",
+      "githubLink": "https://github.com/MetaArdi/Sistem-E-Learning-SMP",
+      "imageUrl": "/uploads/1786158416766-image_2026-08-08_100655352.png",
+      "tags": []
+    }
+  ],
+  "experiences": [
+    {
+      "id": "1",
+      "role": "Web Developer",
+      "organization": "Muria Computer Club",
+      "description": "Member of the Web Developer Division of Muria Computer Club from 2023 - 2024",
+      "logoUrl": "/uploads/1786143456006-image_2026-08-08_055735147.png",
+      "link": "https://www.instagram.com/mcc.umk/"
+    }
+  ],
+  "educations": [
+    {
+      "id": "1",
+      "institution": "Universitas Muria Kudus",
+      "field": "Information System",
+      "logoUrl": "/uploads/1786144363266-image_2026-08-08_061241652.png",
+      "link": "https://umk.ac.id"
+    },
+    {
+      "id": "2",
+      "institution": "SMA Negeri 2 Kudus",
+      "field": "IPA",
+      "logoUrl": "/uploads/1786143551012-image_2026-08-08_055910945.png",
+      "link": "https://sman2kudus.sch.id/webnew/"
+    }
+  ],
+  "achievements": [],
+  "contacts": {
+    "email": "metaflash55@gmail.com",
+    "web3formsKey": "",
+    "instagram": "https://instagram.com/metaardi_",
+    "github": "https://github.com/MetaArdi",
+    "linkedin": "https://www.linkedin.com/in/meta-setiawan-320934265/"
+  }
+}
