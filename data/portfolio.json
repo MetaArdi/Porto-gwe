@@ -110,6 +110,60 @@
       "category": "Language",
       "iconName": "FaPython",
       "iconUrl": "/assets/python.jpg"
+    },
+    {
+      "id": "1786208336094",
+      "name": "Vue.js",
+      "category": "Frontend",
+      "iconUrl": "/uploads/1786208361767-58482acecef1014c0b5e4a1e.png"
+    },
+    {
+      "id": "1786208380159",
+      "name": "Laravel",
+      "category": "Framework",
+      "iconUrl": "/uploads/1786208398292-image_2026-08-08_235958206.png"
+    },
+    {
+      "id": "1786208402917",
+      "name": "PostgreSQL",
+      "category": "Database",
+      "iconUrl": "/uploads/1786208420445-image_2026-08-09_000020398.png"
+    },
+    {
+      "id": "1786208423847",
+      "name": "MySQL",
+      "category": "Database",
+      "iconUrl": "/uploads/1786208438763-image_2026-08-09_000038593.png"
+    },
+    {
+      "id": "1786208441790",
+      "name": "Java",
+      "category": "Backend",
+      "iconUrl": "/uploads/1786208454919-image_2026-08-09_000054876.png"
+    },
+    {
+      "id": "1786208457739",
+      "name": "Docker",
+      "category": "Other",
+      "iconUrl": "/uploads/1786208470453-image_2026-08-09_000110392.png"
+    },
+    {
+      "id": "1786208473166",
+      "name": "AWS",
+      "category": "Other",
+      "iconUrl": "/uploads/1786208484606-image_2026-08-09_000124557.png"
+    },
+    {
+      "id": "1786208487606",
+      "name": "N8N",
+      "category": "Other",
+      "iconUrl": "/uploads/1786208545461-image_2026-08-09_000225416.png"
+    },
+    {
+      "id": "1786208548788",
+      "name": "Google Cloud Console",
+      "category": "Other",
+      "iconUrl": "/uploads/1786208564175-image_2026-08-09_000244106.png"
     }
   ],
   "projects": [
@@ -152,7 +206,7 @@
     {
       "id": "1786152079107",
       "title": "Sistem Inventarisasi Desa Mijen",
-      "description": "Merupakan Sistem Inventarisasi Aset Desa Mijen yang digunakan untuk kebutuhan pendataan aset desa\nDikembangkan Menggunakan PHP Native, Tailwind CSS dan JS. serta tambahan Fitur Opname",
+      "description": "Mijen Village Asset Inventory System is used for village asset data collection.\nDeveloped using native PHP, Tailwind CSS, and JS, with an additional Opname feature.",
       "link": "",
       "githubLink": "",
       "imageUrl": "/uploads/1786152098586-image_2026-08-08_082133678.png",
