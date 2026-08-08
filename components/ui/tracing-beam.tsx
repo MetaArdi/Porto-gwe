@@ -60,9 +60,9 @@ export const TracingBeam = ({
             boxShadow:
               scrollYProgress.get() > 0
                 ? "none"
-                : "rgba(0, 0, 0, 0.24) 0px 3px 8px",
+                : "0 0 12px #22d3ee",
           }}
-          className="ml-[27px] h-4 w-4 rounded-full border border-neutral-200 dark:border-slate-100 shadow-sm flex items-center justify-center"
+          className="ml-[27px] h-4 w-4 rounded-full border border-cyan-400 shadow-sm flex items-center justify-center bg-cyan-400/20"
         >
           <motion.div
             transition={{
@@ -70,12 +70,10 @@ export const TracingBeam = ({
               delay: 0.5,
             }}
             animate={{
-              backgroundColor:
-                scrollYProgress.get() > 0 ? "white" : "#00d2ff",
-              borderColor:
-                scrollYProgress.get() > 0 ? "white" : "#00d2ff",
+              backgroundColor: "#22d3ee",
+              borderColor: "#22d3ee",
             }}
-            className="h-2 w-2 rounded-full border border-neutral-300 bg-white"
+            className="h-2 w-2 rounded-full border border-cyan-400 bg-cyan-400"
           />
         </motion.div>
         <svg
@@ -88,8 +86,8 @@ export const TracingBeam = ({
           <motion.path
             d={`M 1 0V -36 l 18 24 V ${svgHeight * 0.8} l -18 24V ${svgHeight}`}
             fill="none"
-            className="stroke-[#9091A0] dark:stroke-white"
-            strokeOpacity="0.16"
+            className="stroke-cyan-400/20 dark:stroke-cyan-400/20"
+            strokeOpacity="0.25"
             transition={{
               duration: 10,
             }}
@@ -98,7 +96,7 @@ export const TracingBeam = ({
             d={`M 1 0V -36 l 18 24 V ${svgHeight * 0.8} l -18 24V ${svgHeight}`}
             fill="none"
             stroke="url(#gradient)"
-            strokeWidth="1.25"
+            strokeWidth="2.5"
             className="motion-reduce:hidden"
             transition={{
               duration: 10,
@@ -113,10 +111,10 @@ export const TracingBeam = ({
               y1={y1}
               y2={y2}
             >
-              <stop stopColor="#0066ff" stopOpacity="0"></stop>
-              <stop stopColor="#00d2ff"></stop>
-              <stop offset="0.325" stopColor="#38bdf8"></stop>
-              <stop offset="1" stopColor="#0066ff" stopOpacity="0"></stop>
+              <stop stopColor="#22d3ee" stopOpacity="0"></stop>
+              <stop stopColor="#22d3ee"></stop>
+              <stop offset="0.325" stopColor="#06b6d4"></stop>
+              <stop offset="1" stopColor="#38bdf8" stopOpacity="0"></stop>
             </motion.linearGradient>
           </defs>
         </svg>
