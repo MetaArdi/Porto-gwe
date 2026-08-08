@@ -11,6 +11,7 @@ import Achievement from "./components/Achievement";
 import Contacts from "./components/Contacts";
 import Educations from "./components/Educations";
 import { DynamicHead } from "@/components/DynamicHead";
+import initialData from "@/data/portfolio.json";
 
 function Page() {
   const AboutRef = useRef<HTMLDivElement>(null);
@@ -21,7 +22,7 @@ function Page() {
   const ContactsRef = useRef<HTMLDivElement>(null);
   const EducationsRef = useRef<HTMLDivElement>(null);
 
-  const [portfolioData, setPortfolioData] = useState<any>(null);
+  const [portfolioData, setPortfolioData] = useState<any>(initialData);
 
   const loadPortfolioData = useCallback(() => {
     fetch("/api/portfolio", { cache: "no-store" })
