@@ -37,10 +37,10 @@ export default function Contacts({ data }: { data?: ContactData }) {
   const [loading, setLoading] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
 
-  const email = data?.email || "your-email@gmail.com";
-  const instagram = data?.instagram || "https://www.instagram.com/kevin_cornelliuss/";
-  const github = data?.github || "https://github.com/kevincornellius";
-  const linkedin = data?.linkedin || "https://www.linkedin.com/in/kevincornellius/";
+  const email = data?.email || "metaflash55@gmail.com";
+  const instagram = data?.instagram || "https://instagram.com/metaardi_";
+  const github = data?.github || "https://github.com/MetaArdi";
+  const linkedin = data?.linkedin || "https://www.linkedin.com/in/meta-setiawan-320934265/";
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -102,9 +102,12 @@ export default function Contacts({ data }: { data?: ContactData }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <AnimatedSection>
           <div className="flex flex-col my-12 gap-10 items-start">
-            {/* EMAIL IS PLAIN TEXT (NOT A LINK) */}
-            <div className="mr-1 flex justify-center items-center font-bold text-2xl gap-3 text-cyan-400 select-all">
-              <MdEmail className="text-cyan-400" /> {email}
+            {/* EMAIL ITEM MATCHING INSTAGRAM, GITHUB, LINKEDIN STYLE */}
+            <div
+              onClick={() => window.open(`mailto:${email}`, "_blank")}
+              className="mr-1 hover:opacity-60 cursor-pointer flex justify-center items-center underline underline-offset-2 decoration-cyan-400 font-bold text-2xl gap-3"
+            >
+              <MdEmail /> {email}
             </div>
 
             <div
