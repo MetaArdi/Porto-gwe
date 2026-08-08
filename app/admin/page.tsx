@@ -21,7 +21,8 @@ import {
   Eye,
   Crop,
   Globe,
-  Image as ImageIcon
+  Image as ImageIcon,
+  MessageSquare
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -1261,7 +1262,7 @@ export default function AdminDashboard() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-neutral-400 mb-2">Alamat Email Penerima Pesan Form</label>
+                  <label className="block text-xs font-bold text-neutral-400 mb-2">Alamat Email Tujuan (Gmail Link)</label>
                   <input
                     type="email"
                     value={data?.contacts?.email || ""}
@@ -1269,19 +1270,21 @@ export default function AdminDashboard() {
                     className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-sm focus:border-cyan-400 outline-none"
                     placeholder="namaanda@gmail.com"
                   />
-                  <p className="text-xs text-neutral-500 mt-1">Pesan dari pengunjung di form "Contact Me" akan dikirimkan ke alamat email ini.</p>
+                  <p className="text-xs text-neutral-500 mt-1">Klik item 'Email' di halaman utama akan langsung membuka compose Gmail ke alamat ini.</p>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-neutral-400 mb-2">Web3Forms Access Key (Opsional)</label>
+                  <label className="block text-xs font-bold text-neutral-400 mb-2 flex items-center gap-1.5">
+                    <MessageSquare className="w-4 h-4 text-cyan-400" /> Nomor WhatsApp (Tujuan Submit Form)
+                  </label>
                   <input
                     type="text"
-                    value={data?.contacts?.web3formsKey || ""}
-                    onChange={(e) => setData({ ...data, contacts: { ...data.contacts, web3formsKey: e.target.value } })}
+                    value={data?.contacts?.whatsapp || ""}
+                    onChange={(e) => setData({ ...data, contacts: { ...data.contacts, whatsapp: e.target.value } })}
                     className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-sm focus:border-cyan-400 outline-none"
-                    placeholder="Masukkan Web3Forms Access Key jika ada"
+                    placeholder="62895358055627"
                   />
-                  <p className="text-xs text-neutral-500 mt-1">Dapatkan key gratis dari web3forms.com untuk menerima email langsung tanpa membuka aplikasi email.</p>
+                  <p className="text-xs text-neutral-500 mt-1">Format nomor gunakan kode negara tanpa tanda + (contoh: 62895358055627). Ketika pengunjung menekan "Submit Form", pesan akan dikirim langsung ke WhatsApp ini.</p>
                 </div>
 
                 <div>

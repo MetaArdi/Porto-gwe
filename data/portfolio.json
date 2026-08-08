@@ -1,9 +1,9 @@
 {
   "siteSettings": {
-    "title": "MetaArdi",
+    "title": "Meta Ardi Setiawan - Portfolio",
     "description": "Portfolio Meta Ardi Setiawan - Software Engineer & Web Developer",
     "faviconUrl": "/icon.png",
-    "brandName": "MetaArdi"
+    "brandName": "Meta Ardi Setiawan"
   },
   "about": {
     "name": "Meta Ardi Setiawan",
@@ -33,6 +33,13 @@
       "category": "Frontend",
       "iconName": "FaReact",
       "iconUrl": "/assets/react.png"
+    },
+    {
+      "id": "2",
+      "name": "Next.js",
+      "category": "Framework",
+      "iconName": "SiNextdotjs",
+      "iconUrl": "/assets/next.png"
     },
     {
       "id": "3",
@@ -91,77 +98,18 @@
       "iconUrl": "/assets/css.png"
     },
     {
+      "id": "11",
+      "name": "C++",
+      "category": "Competitive Programming",
+      "iconName": "SiCplusplus",
+      "iconUrl": "/assets/cpp.png"
+    },
+    {
       "id": "12",
       "name": "Python",
       "category": "Language",
       "iconName": "FaPython",
       "iconUrl": "/assets/python.jpg"
-    },
-    {
-      "id": "1786158860932",
-      "name": "Next.js",
-      "category": "Framework",
-      "iconUrl": "/uploads/1786158874569-image_2026-08-08_101434082.png"
-    },
-    {
-      "id": "1786158996456",
-      "name": "PHP",
-      "category": "Language",
-      "iconUrl": "/uploads/1786159002322-image_2026-08-08_101642277.png"
-    },
-    {
-      "id": "1786159127229",
-      "name": "Vue.js",
-      "category": "Framework",
-      "iconUrl": "/uploads/1786159139103-58482acecef1014c0b5e4a1e.png"
-    },
-    {
-      "id": "1786159157766",
-      "name": "Laravel",
-      "category": "Framework",
-      "iconUrl": "/uploads/1786159167867-image_2026-08-08_101927822.png"
-    },
-    {
-      "id": "1786159192976",
-      "name": "Postgre SQL",
-      "category": "Database",
-      "iconUrl": "/uploads/1786159211429-image_2026-08-08_102011380.png"
-    },
-    {
-      "id": "1786159228282",
-      "name": "MySQL",
-      "category": "Database",
-      "iconUrl": "/uploads/1786159237194-image_2026-08-08_102037151.png"
-    },
-    {
-      "id": "1786159303809",
-      "name": "Java",
-      "category": "Backend",
-      "iconUrl": "/uploads/1786159312200-image_2026-08-08_102152149.png"
-    },
-    {
-      "id": "1786159473701",
-      "name": "Docker",
-      "category": "Other",
-      "iconUrl": "/uploads/1786159497207-image_2026-08-08_102457137.png"
-    },
-    {
-      "id": "1786159636896",
-      "name": "AWS",
-      "category": "Other",
-      "iconUrl": "/uploads/1786159655469-image_2026-08-08_102735177.png"
-    },
-    {
-      "id": "1786159699524",
-      "name": "N8N",
-      "category": "Other",
-      "iconUrl": "/uploads/1786159710192-image_2026-08-08_102830156.png"
-    },
-    {
-      "id": "1786159735100",
-      "name": "Google Cloud Console",
-      "category": "Other",
-      "iconUrl": "/uploads/1786159749724-image_2026-08-08_102909684.png"
     }
   ],
   "projects": [
@@ -204,19 +152,10 @@
     {
       "id": "1786152079107",
       "title": "Sistem Inventarisasi Desa Mijen",
-      "description": "Mijen Village Asset Inventory System is used for village asset data collection.\nDeveloped using native PHP, Tailwind CSS, and JS, with an additional Opname feature.",
-      "link": "#",
-      "githubLink": "https://github.com/MetaArdi/SIPADES",
+      "description": "Merupakan Sistem Inventarisasi Aset Desa Mijen yang digunakan untuk kebutuhan pendataan aset desa\nDikembangkan Menggunakan PHP Native, Tailwind CSS dan JS. serta tambahan Fitur Opname",
+      "link": "",
+      "githubLink": "",
       "imageUrl": "/uploads/1786152098586-image_2026-08-08_082133678.png",
-      "tags": []
-    },
-    {
-      "id": "1786158383281",
-      "title": "Sistem E-Learning SMPN 1 Mayong",
-      "description": "It's an e-learning system for distance learning, allowing you to send and receive assignments, practice questions, and school exams.\nDeveloped using CodeIgniter 3, with MySQL and several other components.",
-      "link": "#",
-      "githubLink": "https://github.com/MetaArdi/Sistem-E-Learning-SMP",
-      "imageUrl": "/uploads/1786158416766-image_2026-08-08_100655352.png",
       "tags": []
     }
   ],
@@ -228,6 +167,14 @@
       "description": "Member of the Web Developer Division of Muria Computer Club from 2023 - 2024",
       "logoUrl": "/uploads/1786143456006-image_2026-08-08_055735147.png",
       "link": "https://www.instagram.com/mcc.umk/"
+    },
+    {
+      "id": "2",
+      "role": "Competitive Programming Supervisor",
+      "organization": "Ikatan Alumni TOKI",
+      "description": "",
+      "logoUrl": "/assets/Toki.jpg",
+      "link": "#"
     }
   ],
   "educations": [
@@ -246,9 +193,39 @@
       "link": "https://sman2kudus.sch.id/webnew/"
     }
   ],
-  "achievements": [],
+  "achievements": [
+    {
+      "id": "1",
+      "title": "Medali Perunggu Olimpiade Sains Nasional Informatika 2024",
+      "organization": "Kemendikbudristek",
+      "logoUrl": "/assets/OSN.jpg",
+      "link": "#"
+    },
+    {
+      "id": "2",
+      "title": "3rd Place CHIPS Competition",
+      "organization": "Universitas Katolik Parahyangan",
+      "logoUrl": "/assets/unpar.png",
+      "link": "#"
+    },
+    {
+      "id": "3",
+      "title": "Finalis BNPCHS",
+      "organization": "Bina Nusantara University",
+      "logoUrl": "/assets/bnpchs.png",
+      "link": "#"
+    },
+    {
+      "id": "4",
+      "title": "Finalis Schematics",
+      "organization": "ITS",
+      "logoUrl": "/assets/schematics.jpg",
+      "link": "#"
+    }
+  ],
   "contacts": {
     "email": "metaflash55@gmail.com",
+    "whatsapp": "62895358055627",
     "web3formsKey": "",
     "instagram": "https://instagram.com/metaardi_",
     "github": "https://github.com/MetaArdi",
