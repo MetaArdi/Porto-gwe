@@ -167,14 +167,6 @@
       "description": "Member of the Web Developer Division of Muria Computer Club from 2023 - 2024",
       "logoUrl": "/uploads/1786143456006-image_2026-08-08_055735147.png",
       "link": "https://www.instagram.com/mcc.umk/"
-    },
-    {
-      "id": "2",
-      "role": "Competitive Programming Supervisor",
-      "organization": "Ikatan Alumni TOKI",
-      "description": "",
-      "logoUrl": "/assets/Toki.jpg",
-      "link": "#"
     }
   ],
   "educations": [
@@ -193,39 +185,10 @@
       "link": "https://sman2kudus.sch.id/webnew/"
     }
   ],
-  "achievements": [
-    {
-      "id": "1",
-      "title": "Medali Perunggu Olimpiade Sains Nasional Informatika 2024",
-      "organization": "Kemendikbudristek",
-      "logoUrl": "/assets/OSN.jpg",
-      "link": "#"
-    },
-    {
-      "id": "2",
-      "title": "3rd Place CHIPS Competition",
-      "organization": "Universitas Katolik Parahyangan",
-      "logoUrl": "/assets/unpar.png",
-      "link": "#"
-    },
-    {
-      "id": "3",
-      "title": "Finalis BNPCHS",
-      "organization": "Bina Nusantara University",
-      "logoUrl": "/assets/bnpchs.png",
-      "link": "#"
-    },
-    {
-      "id": "4",
-      "title": "Finalis Schematics",
-      "organization": "ITS",
-      "logoUrl": "/assets/schematics.jpg",
-      "link": "#"
-    }
-  ],
+  "achievements": [],
   "contacts": {
     "email": "metaflash55@gmail.com",
-    "whatsapp": "62895358055627",
+    "whatsapp": "62895638984012",
     "web3formsKey": "",
     "instagram": "https://instagram.com/metaardi_",
     "github": "https://github.com/MetaArdi",

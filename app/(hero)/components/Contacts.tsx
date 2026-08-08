@@ -40,7 +40,7 @@ export default function Contacts({ data }: { data?: ContactData }) {
   return (
     <div className="py-8">
       <AnimatedSection>
-        <h1 className="font-black text-3xl sm:text-4xl underline underline-offset-4 decoration-cyan-400">
+        <h1 className="font-black text-3xl sm:text-4xl underline underline-offset-4 decoration-cyan-400 text-black dark:text-white">
           Contact Me !
         </h1>
       </AnimatedSection>
@@ -53,26 +53,26 @@ export default function Contacts({ data }: { data?: ContactData }) {
                 const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}`;
                 window.open(gmailUrl, "_blank");
               }}
-              className="mr-1 hover:opacity-60 cursor-pointer flex justify-center items-center underline underline-offset-2 decoration-cyan-400 font-bold text-2xl gap-3 text-white"
+              className="mr-1 hover:opacity-60 cursor-pointer flex justify-center items-center underline underline-offset-2 decoration-cyan-400 font-bold text-2xl gap-3 text-black dark:text-white"
             >
               <MdEmail /> Email
             </div>
 
             <div
               onClick={() => window.open(instagram, "_blank")}
-              className="mr-1 hover:opacity-60 cursor-pointer flex justify-center items-center underline underline-offset-2 decoration-cyan-400 font-bold text-2xl gap-3 text-white"
+              className="mr-1 hover:opacity-60 cursor-pointer flex justify-center items-center underline underline-offset-2 decoration-cyan-400 font-bold text-2xl gap-3 text-black dark:text-white"
             >
               <AiFillInstagram /> Instagram
             </div>
             <div
               onClick={() => window.open(github, "_blank")}
-              className="mr-1 hover:opacity-60 flex justify-center cursor-pointer items-center underline underline-offset-2 decoration-cyan-400 font-bold text-2xl gap-3 text-white"
+              className="mr-1 hover:opacity-60 flex justify-center cursor-pointer items-center underline underline-offset-2 decoration-cyan-400 font-bold text-2xl gap-3 text-black dark:text-white"
             >
               <FaGithub /> Github
             </div>
             <div
               onClick={() => window.open(linkedin, "_blank")}
-              className="mr-1 hover:opacity-60 flex cursor-pointer justify-center items-center underline underline-offset-2 decoration-cyan-400 font-bold text-2xl gap-3 text-white"
+              className="mr-1 hover:opacity-60 flex cursor-pointer justify-center items-center underline underline-offset-2 decoration-cyan-400 font-bold text-2xl gap-3 text-black dark:text-white"
             >
               <FaLinkedinIn /> LinkedIn
             </div>
@@ -81,21 +81,21 @@ export default function Contacts({ data }: { data?: ContactData }) {
         <AnimatedSection>
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             <input
-              className="rounded-md border-2 border-cyan-400 h-12 px-6 hover:border-black text-black bg-white font-medium"
+              className="rounded-md border-2 border-cyan-400 h-12 px-6 hover:border-black text-black dark:text-white bg-white dark:bg-neutral-900 font-medium outline-none placeholder:text-neutral-400"
               placeholder="Your Name"
               type="text"
               name="name"
               required
             />
             <input
-              className="rounded-md border-2 border-cyan-400 h-12 px-6 hover:border-black text-black bg-white font-medium"
+              className="rounded-md border-2 border-cyan-400 h-12 px-6 hover:border-black text-black dark:text-white bg-white dark:bg-neutral-900 font-medium outline-none placeholder:text-neutral-400"
               placeholder="Subject"
               type="text"
               name="subject"
               required
             />
             <textarea
-              className="rounded-md border-2 border-cyan-400 h-36 px-6 py-4 hover:border-black resize-none text-black bg-white font-medium"
+              className="rounded-md border-2 border-cyan-400 h-36 px-6 py-4 hover:border-black resize-none text-black dark:text-white bg-white dark:bg-neutral-900 font-medium outline-none placeholder:text-neutral-400"
               placeholder="Message"
               name="message"
               required
