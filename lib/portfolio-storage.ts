@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { unstable_cache } from "next/cache";
 import { Redis } from "@upstash/redis";
-import { put, list, del } from "@vercel/blob";
+import { put, list, del, get } from "@vercel/blob";
 import defaultData from "@/data/portfolio.json";
 
 export type DataStorageProvider =
@@ -51,6 +51,64 @@ export const PORTFOLIO_CACHE_TAG = "portfolio";
 // Short-lived in-memory cache for immediate read-after-write consistency on Vercel Blob
 let recentBlobWrite: { data: any; savedAt: number } | null = null;
 const RECENT_BLOB_TTL_MS = 15_000;
+let preferredBlobAccess: "public" | "private" = "public";
+
+function isPrivateStoreMismatchError(err: unknown): boolean {
+  const msg =
+    err instanceof Error ? err.message.toLowerCase() : String(err).toLowerCase();
+  return (
+    msg.includes("private store") ||
+    msg.includes("cannot use public access")
+  );
+}
+
+function isPublicStoreMismatchError(err: unknown): boolean {
+  const msg =
+    err instanceof Error ? err.message.toLowerCase() : String(err).toLowerCase();
+  return (
+    msg.includes("public store") ||
+    msg.includes("cannot use private access")
+  );
+}
+
+async function putBlobAutoAccess(
+  pathname: string,
+  body: string | Buffer,
+  options: {
+    addRandomSuffix?: boolean;
+    contentType?: string;
+    cacheControlMaxAge?: number;
+    token?: string;
+    storeId?: string;
+  }
+) {
+  const firstAccess = preferredBlobAccess;
+  try {
+    const blob = await put(pathname, body, {
+      ...options,
+      access: firstAccess,
+    });
+    return { blob, access: firstAccess };
+  } catch (err) {
+    if (firstAccess === "public" && isPrivateStoreMismatchError(err)) {
+      preferredBlobAccess = "private";
+      const blob = await put(pathname, body, {
+        ...options,
+        access: "private",
+      });
+      return { blob, access: "private" as const };
+    }
+    if (firstAccess === "private" && isPublicStoreMismatchError(err)) {
+      preferredBlobAccess = "public";
+      const blob = await put(pathname, body, {
+        ...options,
+        access: "public",
+      });
+      return { blob, access: "public" as const };
+    }
+    throw err;
+  }
+}
 
 function isVercelEnvironment(): boolean {
   return Boolean(process.env.VERCEL === "1" || process.env.VERCEL_ENV);
@@ -197,6 +255,17 @@ async function fetchLatestBlobPortfolioRaw(noStore: boolean): Promise<any | null
   });
 
   const latest = sorted[0];
+  if (latest.url.includes(".private.blob.vercel-storage.com")) {
+    preferredBlobAccess = "private";
+    const result = await get(latest.pathname, {
+      access: "private",
+      useCache: false,
+      ...blobCfg,
+    });
+    if (!result || result.statusCode !== 200 || !result.stream) return null;
+    return await new Response(result.stream).json();
+  }
+
   const response = await fetch(
     latest.url,
     noStore ? { cache: "no-store" } : undefined
@@ -267,14 +336,13 @@ export async function savePortfolioData(
     return { provider: "upstash-redis" };
   }
 
-  // 2. Secondary cloud storage: Vercel Blob (unique pathname per save -> 0s CDN cache staleness)
+  // 2. Secondary cloud storage: Vercel Blob (supports both Public and Private stores automatically)
   const blobCfg = getBlobConfig();
   if (blobCfg) {
-    const newBlob = await put(
+    const { blob: newBlob } = await putBlobAutoAccess(
       `${BLOB_DATA_PREFIX}-${Date.now()}.json`,
       JSON.stringify(updatedData, null, 2),
       {
-        access: "public",
         addRandomSuffix: true,
         contentType: "application/json",
         cacheControlMaxAge: 0,
@@ -351,19 +419,26 @@ export async function uploadPortfolioFile(
   const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
   const filename = `${Date.now()}-${safeName}`;
 
-  // 1. Primary: Vercel Blob (works both on Vercel OIDC/RW token and locally if configured)
+  const bytes = await file.arrayBuffer();
+
+  // 1. Primary: Vercel Blob (supports both Public and Private stores automatically)
   const blobCfg = getBlobConfig();
   if (blobCfg) {
-    const blob = await put(`uploads/${filename}`, file, {
-      access: "public",
-      addRandomSuffix: true,
-      contentType: file.type || undefined,
-      ...blobCfg,
-    });
-    return { url: blob.url, provider: "vercel-blob" };
+    const { blob, access } = await putBlobAutoAccess(
+      `uploads/${filename}`,
+      Buffer.from(bytes),
+      {
+        addRandomSuffix: true,
+        contentType: file.type || undefined,
+        ...blobCfg,
+      }
+    );
+    const url =
+      access === "private"
+        ? `/api/blob?path=${encodeURIComponent(blob.pathname)}`
+        : blob.url;
+    return { url, provider: "vercel-blob" };
   }
-
-  const bytes = await file.arrayBuffer();
 
   // 2. Local development filesystem
   if (!isVercelEnvironment()) {
@@ -390,4 +465,41 @@ export async function uploadPortfolioFile(
     url: `data:${mimeType};base64,${base64Data}`,
     provider: "base64-fallback",
   };
+}
+
+export async function readUploadedBlobImage(
+  blobPath: string
+): Promise<{ stream: ReadableStream<Uint8Array>; contentType: string } | null> {
+  const blobCfg = getBlobConfig();
+  if (!blobCfg) return null;
+
+  try {
+    const result = await get(blobPath, {
+      access: "private",
+      ...blobCfg,
+    });
+    if (result && result.statusCode === 200 && result.stream) {
+      return {
+        stream: result.stream,
+        contentType: result.blob.contentType || "application/octet-stream",
+      };
+    }
+  } catch (err) {
+    if (isPublicStoreMismatchError(err)) {
+      const publicResult = await get(blobPath, {
+        access: "public",
+        ...blobCfg,
+      });
+      if (publicResult && publicResult.statusCode === 200 && publicResult.stream) {
+        return {
+          stream: publicResult.stream,
+          contentType: publicResult.blob.contentType || "application/octet-stream",
+        };
+      }
+      return null;
+    }
+    throw err;
+  }
+
+  return null;
 }
