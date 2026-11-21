@@ -1,46 +1,86 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
-import defaultData from "@/data/portfolio.json";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { isAdminAuthenticated } from "@/lib/admin-auth";
+import {
+  getPortfolioData,
+  getStorageStatus,
+  PORTFOLIO_CACHE_TAG,
+  savePortfolioData,
+  StorageNotConfiguredError,
+} from "@/lib/portfolio-storage";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const dataFilePath = path.join(process.cwd(), "data", "portfolio.json");
-
 const headers = {
   "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-  "Pragma": "no-cache",
-  "Expires": "0",
+  Pragma: "no-cache",
+  Expires: "0",
 };
 
 export async function GET() {
   try {
-    if (fs.existsSync(dataFilePath)) {
-      const fileContents = fs.readFileSync(dataFilePath, "utf8");
-      const data = JSON.parse(fileContents);
-      return NextResponse.json(data, { headers });
-    }
-    return NextResponse.json(defaultData, { headers });
+    const data = await getPortfolioData();
+    return NextResponse.json(data, { headers });
   } catch (error) {
-    return NextResponse.json(defaultData, { headers });
+    console.error("GET /api/portfolio error:", error);
+    return NextResponse.json(
+      { error: "Gagal memuat data portofolio." },
+      { status: 500, headers }
+    );
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const updatedData = await request.json();
-
-    try {
-      if (fs.existsSync(path.dirname(dataFilePath))) {
-        fs.writeFileSync(dataFilePath, JSON.stringify(updatedData, null, 2), "utf8");
-      }
-    } catch (fsError) {
-      console.warn("Serverless environment detected (read-only FS).");
+    if (!isAdminAuthenticated()) {
+      return NextResponse.json(
+        { error: "Sesi admin tidak valid. Silakan login terlebih dahulu." },
+        { status: 401, headers }
+      );
     }
 
-    return NextResponse.json({ message: "Portfolio data updated successfully", data: updatedData }, { headers });
+    const updatedData = await request.json();
+    if (!updatedData || typeof updatedData !== "object") {
+      return NextResponse.json(
+        { error: "Payload data portofolio tidak valid." },
+        { status: 400, headers }
+      );
+    }
+
+    const { provider } = await savePortfolioData(updatedData);
+
+    // Immediately invalidate Next.js Data Cache & page caches so changes appear live
+    revalidateTag(PORTFOLIO_CACHE_TAG);
+    revalidatePath("/");
+    revalidatePath("/admin");
+
+    return NextResponse.json(
+      {
+        message: "Perubahan tersimpan & langsung aktif di halaman utama!",
+        data: updatedData,
+        provider,
+        storage: getStorageStatus(),
+      },
+      { headers }
+    );
   } catch (error) {
-    return NextResponse.json({ error: "Failed to update portfolio data" }, { status: 500, headers });
+    if (error instanceof StorageNotConfiguredError) {
+      return NextResponse.json(
+        { error: error.message, storage: getStorageStatus() },
+        { status: error.statusCode, headers }
+      );
+    }
+
+    console.error("POST /api/portfolio error:", error);
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error
+            ? `Gagal menyimpan data: ${error.message}`
+            : "Gagal menyimpan data portofolio.",
+      },
+      { status: 500, headers }
+    );
   }
 }

@@ -46,7 +46,8 @@ export const defaultProjects: Project[] = [
 
 function Projects({ items }: { items?: any[] }) {
   const projectItems: Project[] = Array.isArray(items)
-    ? items.map((p) => ({
+    ? items.map((p, idx) => ({
+        id: p.id || String(idx),
         title: p.title || 'Untitled Project',
         description: p.description || '',
         link: p.link || '#',

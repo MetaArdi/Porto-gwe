@@ -2,34 +2,36 @@ import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import fs from "fs";
-import path from "path";
+import { getPortfolioData } from "@/lib/portfolio-storage";
 
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"] });
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   try {
-    const filePath = path.join(process.cwd(), "data", "portfolio.json");
-    if (fs.existsSync(filePath)) {
-      const fileData = fs.readFileSync(filePath, "utf-8");
-      const json = JSON.parse(fileData);
-      const site = json.siteSettings || {};
-      const title = site.title || (json.about?.name ? `${json.about.name} - Portfolio` : "Meta Ardi Setiawan - Portfolio");
-      const description = site.description || json.about?.bio || "Personal Portfolio";
-      const icon = site.faviconUrl || "/icon.png";
+    const json = await getPortfolioData();
+    const site = json?.siteSettings || {};
+    const title =
+      site.title ||
+      (json?.about?.name
+        ? `${json.about.name} - Portfolio`
+        : "Meta Ardi Setiawan - Portfolio");
+    const description =
+      site.description || json?.about?.bio || "Personal Portfolio";
+    const icon = site.faviconUrl || "/icon.png";
 
-      return {
-        title,
-        description,
-        icons: {
-          icon,
-          shortcut: icon,
-          apple: icon,
-        },
-      };
-    }
+    return {
+      title,
+      description,
+      icons: {
+        icon,
+        shortcut: icon,
+        apple: icon,
+      },
+    };
   } catch (err) {
-    console.error("Error reading metadata from portfolio.json:", err);
+    console.error("Error reading metadata:", err);
   }
 
   return {

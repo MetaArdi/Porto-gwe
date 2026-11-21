@@ -8,6 +8,7 @@ import { FaGithub } from "react-icons/fa";
 import { IconType } from "react-icons/lib";
 
 export type Project = {
+  id?: string;
   title: string;
   description: string;
   link: string;
@@ -40,7 +41,7 @@ export const HoverEffect = ({
           <Link
             target="_blank"
             href={item.link || "#"}
-            key={item.link || idx}
+            key={item.id || `${item.title}-${idx}`}
             className="relative group block p-2 h-full w-full"
             onMouseEnter={() => setHoveredIndex(idx)}
             onMouseLeave={() => setHoveredIndex(null)}

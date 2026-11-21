@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
+import React, { useState, useEffect, useCallback } from "react";
 import { 
   User, 
   Briefcase, 
@@ -22,15 +21,37 @@ import {
   Crop,
   Globe,
   Image as ImageIcon,
-  MessageSquare
+  MessageSquare,
+  Lock,
+  LogOut,
+  Cloud,
+  HardDrive,
+  ShieldAlert
 } from "lucide-react";
+
+interface StorageStatus {
+  dataProvider: "upstash-redis" | "vercel-blob" | "local-fs" | "unconfigured";
+  uploadProvider: "vercel-blob" | "local-fs" | "base64-fallback";
+  isVercel: boolean;
+  writable: boolean;
+}
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<"about" | "settings" | "techStack" | "projects" | "experiences" | "educations" | "achievements" | "contacts">("about");
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  // Auth & Storage Status
+  const [authChecked, setAuthChecked] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [authEnabled, setAuthEnabled] = useState(false);
+  const [storageStatus, setStorageStatus] = useState<StorageStatus | null>(null);
+  const [passwordInput, setPasswordInput] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [loggingIn, setLoggingIn] = useState(false);
 
   // Edit State for modals/subforms
   const [editingTech, setEditingTech] = useState<any>(null);
@@ -39,28 +60,100 @@ export default function AdminDashboard() {
   const [editingEducation, setEditingEducation] = useState<any>(null);
   const [editingAchievement, setEditingAchievement] = useState<any>(null);
 
-  useEffect(() => {
-    fetchPortfolio();
+  const showToast = useCallback((message: string, type: "success" | "error" = "success") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 5000);
   }, []);
 
-  const fetchPortfolio = async () => {
+  const updateDraftData = (nextData: any) => {
+    setData(nextData);
+    setHasUnsavedChanges(true);
+  };
+
+  const fetchPortfolio = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/portfolio", { cache: "no-store" });
+      const res = await fetch(`/api/portfolio?t=${Date.now()}`, { cache: "no-store" });
       const json = await res.json();
       if (json && !json.error) {
         setData(json);
+        setHasUnsavedChanges(false);
+      } else {
+        showToast(json?.error || "Gagal memuat data portofolio", "error");
       }
-    } catch (err) {
+    } catch {
       showToast("Gagal memuat data portofolio", "error");
     } finally {
       setLoading(false);
     }
+  }, [showToast]);
+
+  const checkAuthAndInit = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/admin/auth?t=${Date.now()}`, { cache: "no-store" });
+      const status = await res.json();
+      setAuthEnabled(Boolean(status.authEnabled));
+      setAuthenticated(Boolean(status.authenticated));
+      setStorageStatus(status.storage || null);
+      setAuthChecked(true);
+
+      if (status.authenticated || !status.authEnabled) {
+        await fetchPortfolio();
+      } else {
+        setLoading(false);
+      }
+    } catch {
+      setAuthChecked(true);
+      await fetchPortfolio();
+    }
+  }, [fetchPortfolio]);
+
+  useEffect(() => {
+    checkAuthAndInit();
+  }, [checkAuthAndInit]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError("");
+    setLoggingIn(true);
+    try {
+      const res = await fetch("/api/admin/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: passwordInput }),
+      });
+      const result = await res.json();
+      if (res.ok && result.authenticated) {
+        setAuthenticated(true);
+        setPasswordInput("");
+        await fetchPortfolio();
+      } else {
+        setLoginError(result.error || "Password salah.");
+      }
+    } catch {
+      setLoginError("Gagal terhubung ke server.");
+    } finally {
+      setLoggingIn(false);
+    }
   };
 
-  const showToast = (message: string, type: "success" | "error" = "success") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 4000);
+  const handleLogout = async () => {
+    await fetch("/api/admin/auth", { method: "DELETE" });
+    setAuthenticated(false);
+    setData(null);
+    setHasUnsavedChanges(false);
   };
 
   const saveDataDirectly = async (newData: any) => {
@@ -73,12 +166,21 @@ export default function AdminDashboard() {
         body: JSON.stringify(newData),
       });
       const result = await res.json();
+      if (res.status === 401) {
+        setAuthenticated(false);
+        showToast(result.error || "Sesi berakhir, silakan login ulang.", "error");
+        return;
+      }
+      if (result.storage) {
+        setStorageStatus(result.storage);
+      }
       if (res.ok) {
-        showToast("Perubahan tersimpan & langsung aktif di halaman utama!", "success");
+        setHasUnsavedChanges(false);
+        showToast(result.message || "Perubahan tersimpan & langsung aktif di halaman utama!", "success");
       } else {
         showToast(result.error || "Gagal menyimpan perubahan", "error");
       }
-    } catch (err) {
+    } catch {
       showToast("Terjadi kesalahan saat menyimpan", "error");
     } finally {
       setSaving(false);
@@ -104,21 +206,105 @@ export default function AdminDashboard() {
         body: formData,
       });
       const result = await res.json();
-      if (result.url) {
+      if (res.status === 401) {
+        setAuthenticated(false);
+        showToast(result.error || "Sesi berakhir, silakan login ulang.", "error");
+        return;
+      }
+      if (res.ok && result.url) {
         callback(result.url);
         showToast("Gambar berhasil diunggah!", "success");
       } else {
-        showToast("Gagal mengunggah gambar", "error");
+        showToast(result.error || "Gagal mengunggah gambar", "error");
       }
-    } catch (err) {
+    } catch {
       showToast("Kesalahan saat mengunggah file", "error");
+    } finally {
+      e.target.value = "";
     }
   };
 
-  if (loading) {
+  const getStorageBadgeText = () => {
+    if (!storageStatus) return null;
+    if (storageStatus.dataProvider === "upstash-redis") {
+      return storageStatus.uploadProvider === "vercel-blob"
+        ? "Cloud: Upstash Redis + Vercel Blob"
+        : "Cloud: Upstash Redis";
+    }
+    if (storageStatus.dataProvider === "vercel-blob") {
+      return "Cloud: Vercel Blob";
+    }
+    if (storageStatus.dataProvider === "local-fs") {
+      return "Mode Lokal: data/portfolio.json";
+    }
+    return "Storage Vercel Belum Terhubung";
+  };
+
+  if (!authChecked || loading) {
     return (
       <div className="min-h-screen bg-neutral-950 text-white flex items-center justify-center">
         <div className="text-cyan-400 font-bold text-xl animate-pulse">Memuat Admin Dashboard...</div>
+      </div>
+    );
+  }
+
+  if (authEnabled && !authenticated) {
+    return (
+      <div className="min-h-screen bg-neutral-950 text-neutral-100 flex items-center justify-center p-6">
+        <div className="w-full max-w-md bg-neutral-900 border border-neutral-800 rounded-2xl p-8 shadow-2xl space-y-6">
+          <div className="flex flex-col items-center text-center space-y-2">
+            <div className="w-14 h-14 rounded-2xl bg-cyan-400/10 border border-cyan-400/40 flex items-center justify-center text-cyan-400">
+              <Lock className="w-7 h-7" />
+            </div>
+            <h1 className="text-2xl font-black text-white">
+              Admin <span className="text-cyan-400">Login</span>
+            </h1>
+            <p className="text-xs text-neutral-400">
+              Masukkan password admin untuk mengelola portofolio.
+            </p>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-neutral-400 mb-2">
+                Password Admin
+              </label>
+              <input
+                type="password"
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                required
+                autoFocus
+                placeholder="Masukkan password..."
+                className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-sm text-white focus:border-cyan-400 outline-none"
+              />
+            </div>
+
+            {loginError && (
+              <div className="flex items-center gap-2 text-xs font-semibold text-red-400 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{loginError}</span>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loggingIn}
+              className="w-full bg-cyan-400 hover:bg-cyan-300 text-black font-extrabold py-3 rounded-xl transition disabled:opacity-50 cursor-pointer"
+            >
+              {loggingIn ? "Memverifikasi..." : "Masuk ke Dashboard"}
+            </button>
+          </form>
+
+          <div className="text-center pt-2">
+            <a
+              href="/"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-neutral-400 hover:text-cyan-400 transition"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" /> Kembali ke Website Utama
+            </a>
+          </div>
+        </div>
       </div>
     );
   }
@@ -142,12 +328,12 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-neutral-950 text-neutral-100 font-sans">
       {/* Toast Notification */}
       {toast && (
-        <div className={`fixed top-6 right-6 z-50 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl border ${
+        <div className={`fixed top-6 right-6 z-50 max-w-md flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl border ${
           toast.type === "success" 
             ? "bg-neutral-900 border-cyan-400 text-cyan-300" 
             : "bg-neutral-900 border-red-500 text-red-400"
         }`}>
-          {toast.type === "success" ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+          {toast.type === "success" ? <CheckCircle2 className="w-5 h-5 shrink-0" /> : <AlertCircle className="w-5 h-5 shrink-0" />}
           <span className="font-semibold text-sm">{toast.message}</span>
         </div>
       )}
@@ -155,28 +341,104 @@ export default function AdminDashboard() {
       {/* Top Header */}
       <header className="border-b border-neutral-800 bg-neutral-900/80 backdrop-blur sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Link 
+          <div className="flex flex-wrap items-center gap-4">
+            <a 
               href="/" 
+              onClick={(e) => {
+                if (hasUnsavedChanges && !window.confirm("Ada perubahan yang belum disimpan. Tetap keluar ke halaman utama?")) {
+                  e.preventDefault();
+                }
+              }}
               className="flex items-center gap-2 text-xs font-bold bg-neutral-800 hover:bg-neutral-700 text-neutral-300 px-4 py-2 rounded-lg transition"
             >
               <ArrowLeft className="w-4 h-4" /> Lihat Website Utama
-            </Link>
+            </a>
             <h1 className="text-xl font-black tracking-wide text-white">
               Admin <span className="text-cyan-400">Dashboard</span>
             </h1>
+
+            {storageStatus && (
+              <span
+                className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1 rounded-full border ${
+                  !storageStatus.writable
+                    ? "bg-red-500/10 border-red-500/50 text-red-400"
+                    : storageStatus.dataProvider === "local-fs"
+                    ? "bg-neutral-800 border-neutral-700 text-neutral-300"
+                    : "bg-cyan-400/10 border-cyan-400/40 text-cyan-300"
+                }`}
+              >
+                {storageStatus.dataProvider === "local-fs" ? (
+                  <HardDrive className="w-3.5 h-3.5" />
+                ) : (
+                  <Cloud className="w-3.5 h-3.5" />
+                )}
+                {getStorageBadgeText()}
+              </span>
+            )}
           </div>
 
-          <button
-            onClick={handleSaveAll}
-            disabled={saving}
-            className="flex items-center gap-2 bg-cyan-400 hover:bg-cyan-300 text-black font-extrabold px-6 py-2.5 rounded-xl shadow-lg hover:shadow-cyan-400/20 transition disabled:opacity-50 cursor-pointer"
-          >
-            <Save className="w-4 h-4" />
-            {saving ? "Menyimpan..." : "Simpan Perubahan"}
-          </button>
+          <div className="flex items-center gap-3">
+            {hasUnsavedChanges && (
+              <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-amber-300 bg-amber-500/10 border border-amber-500/30 px-3 py-1.5 rounded-lg">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                Belum disimpan
+              </span>
+            )}
+
+            <button
+              onClick={handleSaveAll}
+              disabled={saving}
+              className={`flex items-center gap-2 font-extrabold px-6 py-2.5 rounded-xl shadow-lg transition disabled:opacity-50 cursor-pointer ${
+                hasUnsavedChanges
+                  ? "bg-amber-400 hover:bg-amber-300 text-black shadow-amber-400/20"
+                  : "bg-cyan-400 hover:bg-cyan-300 text-black hover:shadow-cyan-400/20"
+              }`}
+            >
+              <Save className="w-4 h-4" />
+              {saving ? "Menyimpan..." : hasUnsavedChanges ? "Simpan Perubahan*" : "Simpan Perubahan"}
+            </button>
+
+            {authEnabled && (
+              <button
+                onClick={handleLogout}
+                title="Logout Admin"
+                className="flex items-center gap-1.5 bg-neutral-800 hover:bg-red-500/20 hover:text-red-400 text-neutral-300 font-bold text-xs px-3.5 py-2.5 rounded-xl border border-neutral-700 transition cursor-pointer"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Keluar</span>
+              </button>
+            )}
+          </div>
         </div>
       </header>
+
+      {/* Cloud Storage & Security Banners */}
+      {storageStatus && !storageStatus.writable && (
+        <div className="max-w-7xl mx-auto px-6 pt-6">
+          <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/40 text-red-200 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+            <div className="text-xs leading-relaxed space-y-1">
+              <p className="font-bold text-sm text-red-300">
+                Storage Cloud Vercel Belum Terhubung — Perubahan Tidak Bisa Disimpan
+              </p>
+              <p>
+                Filesystem Vercel bersifat read-only. Buka <strong>Vercel Dashboard → Project Anda → Tab Storage → Create Database</strong>, lalu pilih <strong>Upstash Redis</strong> (untuk data JSON instan) dan/atau <strong>Vercel Blob (Public)</strong> (untuk upload gambar &amp; data), hubungkan ke project ini, lalu klik <strong>Redeploy</strong>.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {storageStatus?.isVercel && storageStatus.writable && !authEnabled && (
+        <div className="max-w-7xl mx-auto px-6 pt-6">
+          <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 flex items-center gap-3">
+            <ShieldAlert className="w-5 h-5 text-amber-400 shrink-0" />
+            <p className="text-xs leading-relaxed">
+              <strong>Tips Keamanan:</strong> Tambahkan environment variable <code className="bg-black/40 px-1.5 py-0.5 rounded text-amber-300">ADMIN_PASSWORD</code> di Vercel Project Settings agar halaman <code className="bg-black/40 px-1.5 py-0.5 rounded text-amber-300">/admin</code> tidak bisa diubah oleh pengunjung lain.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Container */}
       <div className="max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -274,7 +536,7 @@ export default function AdminDashboard() {
                   <input
                     type="text"
                     value={data?.siteSettings?.brandName || data?.about?.name || ""}
-                    onChange={(e) => setData({
+                    onChange={(e) => updateDraftData({
                       ...data,
                       siteSettings: { ...(data.siteSettings || {}), brandName: e.target.value }
                     })}
@@ -289,7 +551,7 @@ export default function AdminDashboard() {
                   <input
                     type="text"
                     value={data?.siteSettings?.title || ""}
-                    onChange={(e) => setData({
+                    onChange={(e) => updateDraftData({
                       ...data,
                       siteSettings: { ...(data.siteSettings || {}), title: e.target.value }
                     })}
@@ -329,7 +591,7 @@ export default function AdminDashboard() {
                       <input
                         type="text"
                         value={data?.siteSettings?.faviconUrl || ""}
-                        onChange={(e) => setData({
+                        onChange={(e) => updateDraftData({
                           ...data,
                           siteSettings: { ...(data.siteSettings || {}), faviconUrl: e.target.value }
                         })}
@@ -345,13 +607,24 @@ export default function AdminDashboard() {
                   <textarea
                     rows={3}
                     value={data?.siteSettings?.description || ""}
-                    onChange={(e) => setData({
+                    onChange={(e) => updateDraftData({
                       ...data,
                       siteSettings: { ...(data.siteSettings || {}), description: e.target.value }
                     })}
                     className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-sm focus:border-cyan-400 outline-none resize-none leading-relaxed"
                     placeholder="Deskripsi singkat website Anda untuk Google..."
                   />
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    onClick={handleSaveAll}
+                    disabled={saving}
+                    className="flex items-center gap-2 bg-cyan-400 hover:bg-cyan-300 text-black font-extrabold px-6 py-2.5 rounded-xl transition disabled:opacity-50 cursor-pointer"
+                  >
+                    <Save className="w-4 h-4" />
+                    {saving ? "Menyimpan..." : "Simpan Pengaturan Website"}
+                  </button>
                 </div>
               </div>
             </div>
@@ -476,7 +749,7 @@ export default function AdminDashboard() {
                   <input
                     type="text"
                     value={data?.about?.name || ""}
-                    onChange={(e) => setData({ ...data, about: { ...data.about, name: e.target.value } })}
+                    onChange={(e) => updateDraftData({ ...data, about: { ...data.about, name: e.target.value } })}
                     className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-sm focus:border-cyan-400 outline-none"
                   />
                 </div>
@@ -486,7 +759,7 @@ export default function AdminDashboard() {
                   <input
                     type="text"
                     value={data?.about?.fullName || ""}
-                    onChange={(e) => setData({ ...data, about: { ...data.about, fullName: e.target.value } })}
+                    onChange={(e) => updateDraftData({ ...data, about: { ...data.about, fullName: e.target.value } })}
                     className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-sm focus:border-cyan-400 outline-none"
                   />
                 </div>
@@ -497,7 +770,7 @@ export default function AdminDashboard() {
                 <input
                   type="text"
                   value={data?.about?.birthYear || ""}
-                  onChange={(e) => setData({ ...data, about: { ...data.about, birthYear: e.target.value } })}
+                  onChange={(e) => updateDraftData({ ...data, about: { ...data.about, birthYear: e.target.value } })}
                   className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-sm focus:border-cyan-400 outline-none"
                 />
               </div>
@@ -507,7 +780,7 @@ export default function AdminDashboard() {
                 <input
                   type="text"
                   value={data?.about?.words ? data.about.words.join(", ") : ""}
-                  onChange={(e) => setData({
+                  onChange={(e) => updateDraftData({
                     ...data,
                     about: { 
                       ...data.about, 
@@ -523,7 +796,7 @@ export default function AdminDashboard() {
                 <textarea
                   rows={5}
                   value={data?.about?.bio || ""}
-                  onChange={(e) => setData({ ...data, about: { ...data.about, bio: e.target.value } })}
+                  onChange={(e) => updateDraftData({ ...data, about: { ...data.about, bio: e.target.value } })}
                   className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-sm focus:border-cyan-400 outline-none resize-none leading-relaxed"
                 />
               </div>
@@ -533,9 +806,20 @@ export default function AdminDashboard() {
                 <input
                   type="text"
                   value={data?.about?.cvUrl || ""}
-                  onChange={(e) => setData({ ...data, about: { ...data.about, cvUrl: e.target.value } })}
+                  onChange={(e) => updateDraftData({ ...data, about: { ...data.about, cvUrl: e.target.value } })}
                   className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-sm focus:border-cyan-400 outline-none"
                 />
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  onClick={handleSaveAll}
+                  disabled={saving}
+                  className="flex items-center gap-2 bg-cyan-400 hover:bg-cyan-300 text-black font-extrabold px-6 py-2.5 rounded-xl transition disabled:opacity-50 cursor-pointer"
+                >
+                  <Save className="w-4 h-4" />
+                  {saving ? "Menyimpan..." : "Simpan Profil & Bio"}
+                </button>
               </div>
             </div>
           )}
@@ -1266,11 +1550,11 @@ export default function AdminDashboard() {
                   <input
                     type="email"
                     value={data?.contacts?.email || ""}
-                    onChange={(e) => setData({ ...data, contacts: { ...data.contacts, email: e.target.value } })}
+                    onChange={(e) => updateDraftData({ ...data, contacts: { ...data.contacts, email: e.target.value } })}
                     className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-sm focus:border-cyan-400 outline-none"
                     placeholder="namaanda@gmail.com"
                   />
-                  <p className="text-xs text-neutral-500 mt-1">Klik item 'Email' di halaman utama akan langsung membuka compose Gmail ke alamat ini.</p>
+                  <p className="text-xs text-neutral-500 mt-1">Klik item &apos;Email&apos; di halaman utama akan langsung membuka compose Gmail ke alamat ini.</p>
                 </div>
 
                 <div>
@@ -1280,11 +1564,11 @@ export default function AdminDashboard() {
                   <input
                     type="text"
                     value={data?.contacts?.whatsapp || ""}
-                    onChange={(e) => setData({ ...data, contacts: { ...data.contacts, whatsapp: e.target.value } })}
+                    onChange={(e) => updateDraftData({ ...data, contacts: { ...data.contacts, whatsapp: e.target.value } })}
                     className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-sm focus:border-cyan-400 outline-none"
                     placeholder="62895358055627"
                   />
-                  <p className="text-xs text-neutral-500 mt-1">Format nomor gunakan kode negara tanpa tanda + (contoh: 62895358055627). Ketika pengunjung menekan "Submit Form", pesan akan dikirim langsung ke WhatsApp ini.</p>
+                  <p className="text-xs text-neutral-500 mt-1">Format nomor gunakan kode negara tanpa tanda + (contoh: 62895358055627). Ketika pengunjung menekan &quot;Submit Form&quot;, pesan akan dikirim langsung ke WhatsApp ini.</p>
                 </div>
 
                 <div>
@@ -1292,7 +1576,7 @@ export default function AdminDashboard() {
                   <input
                     type="text"
                     value={data?.contacts?.instagram || ""}
-                    onChange={(e) => setData({ ...data, contacts: { ...data.contacts, instagram: e.target.value } })}
+                    onChange={(e) => updateDraftData({ ...data, contacts: { ...data.contacts, instagram: e.target.value } })}
                     className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-sm focus:border-cyan-400 outline-none"
                   />
                 </div>
@@ -1302,7 +1586,7 @@ export default function AdminDashboard() {
                   <input
                     type="text"
                     value={data?.contacts?.github || ""}
-                    onChange={(e) => setData({ ...data, contacts: { ...data.contacts, github: e.target.value } })}
+                    onChange={(e) => updateDraftData({ ...data, contacts: { ...data.contacts, github: e.target.value } })}
                     className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-sm focus:border-cyan-400 outline-none"
                   />
                 </div>
@@ -1312,9 +1596,20 @@ export default function AdminDashboard() {
                   <input
                     type="text"
                     value={data?.contacts?.linkedin || ""}
-                    onChange={(e) => setData({ ...data, contacts: { ...data.contacts, linkedin: e.target.value } })}
+                    onChange={(e) => updateDraftData({ ...data, contacts: { ...data.contacts, linkedin: e.target.value } })}
                     className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-sm focus:border-cyan-400 outline-none"
                   />
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    onClick={handleSaveAll}
+                    disabled={saving}
+                    className="flex items-center gap-2 bg-cyan-400 hover:bg-cyan-300 text-black font-extrabold px-6 py-2.5 rounded-xl transition disabled:opacity-50 cursor-pointer"
+                  >
+                    <Save className="w-4 h-4" />
+                    {saving ? "Menyimpan..." : "Simpan Kontak & Socials"}
+                  </button>
                 </div>
               </div>
             </div>
