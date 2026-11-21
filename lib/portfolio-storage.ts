@@ -56,13 +56,26 @@ function isVercelEnvironment(): boolean {
   return Boolean(process.env.VERCEL === "1" || process.env.VERCEL_ENV);
 }
 
+function findEnvBySuffix(suffix: string): string | undefined {
+  for (const [key, value] of Object.entries(process.env)) {
+    if (key.endsWith(suffix) && value && value.trim().length > 0) {
+      return value.trim();
+    }
+  }
+  return undefined;
+}
+
 function getRedisCredentials(): { url: string; token: string } | null {
   const url =
     process.env.UPSTASH_REDIS_REST_URL?.trim() ||
-    process.env.KV_REST_API_URL?.trim();
+    process.env.KV_REST_API_URL?.trim() ||
+    findEnvBySuffix("_REST_API_URL") ||
+    findEnvBySuffix("_REDIS_REST_URL");
   const token =
     process.env.UPSTASH_REDIS_REST_TOKEN?.trim() ||
-    process.env.KV_REST_API_TOKEN?.trim();
+    process.env.KV_REST_API_TOKEN?.trim() ||
+    findEnvBySuffix("_REST_API_TOKEN") ||
+    findEnvBySuffix("_REDIS_REST_TOKEN");
 
   if (url && token) {
     return { url, token };
@@ -81,11 +94,30 @@ function getRedisClient(): Redis | null {
   return cachedRedisClient;
 }
 
-function hasBlobStorage(): boolean {
-  return Boolean(
+function getBlobConfig(): { token?: string; storeId?: string } | null {
+  const rwToken =
     process.env.BLOB_READ_WRITE_TOKEN?.trim() ||
-      (process.env.VERCEL_OIDC_TOKEN?.trim() && process.env.BLOB_STORE_ID?.trim())
-  );
+    findEnvBySuffix("_BLOB_READ_WRITE_TOKEN") ||
+    findEnvBySuffix("_READ_WRITE_TOKEN");
+  if (rwToken) {
+    return { token: rwToken };
+  }
+
+  // Newly created Vercel Blob stores use OIDC authentication with BLOB_STORE_ID.
+  // On Vercel runtime, @vercel/blob automatically reads the OIDC token from the
+  // incoming `x-vercel-oidc-token` request header (not process.env.VERCEL_OIDC_TOKEN).
+  const storeId =
+    process.env.BLOB_STORE_ID?.trim() ||
+    findEnvBySuffix("_BLOB_STORE_ID");
+  if (storeId && (isVercelEnvironment() || process.env.VERCEL_OIDC_TOKEN?.trim())) {
+    return { storeId };
+  }
+
+  return null;
+}
+
+function hasBlobStorage(): boolean {
+  return Boolean(getBlobConfig());
 }
 
 export function getStorageStatus(): StorageStatus {
@@ -147,7 +179,14 @@ function writeLocalPortfolioDataBestEffort(updatedData: any): void {
 }
 
 async function fetchLatestBlobPortfolioRaw(noStore: boolean): Promise<any | null> {
-  const { blobs } = await list({ prefix: BLOB_DATA_PREFIX, limit: 25 });
+  const blobCfg = getBlobConfig();
+  if (!blobCfg) return null;
+
+  const { blobs } = await list({
+    prefix: BLOB_DATA_PREFIX,
+    limit: 25,
+    ...blobCfg,
+  });
   if (!blobs || blobs.length === 0) return null;
 
   const sorted = [...blobs].sort((a, b) => {
@@ -229,7 +268,8 @@ export async function savePortfolioData(
   }
 
   // 2. Secondary cloud storage: Vercel Blob (unique pathname per save -> 0s CDN cache staleness)
-  if (hasBlobStorage()) {
+  const blobCfg = getBlobConfig();
+  if (blobCfg) {
     const newBlob = await put(
       `${BLOB_DATA_PREFIX}-${Date.now()}.json`,
       JSON.stringify(updatedData, null, 2),
@@ -238,6 +278,7 @@ export async function savePortfolioData(
         addRandomSuffix: true,
         contentType: "application/json",
         cacheControlMaxAge: 0,
+        ...blobCfg,
       }
     );
 
@@ -246,12 +287,16 @@ export async function savePortfolioData(
 
     // Best-effort cleanup of older JSON snapshots so only the latest stays in Blob
     try {
-      const { blobs } = await list({ prefix: BLOB_DATA_PREFIX, limit: 50 });
+      const { blobs } = await list({
+        prefix: BLOB_DATA_PREFIX,
+        limit: 50,
+        ...blobCfg,
+      });
       const staleUrls = blobs
         .filter((b) => b.url !== newBlob.url)
         .map((b) => b.url);
       if (staleUrls.length > 0) {
-        await del(staleUrls);
+        await del(staleUrls, blobCfg);
       }
     } catch (cleanupErr) {
       console.warn("Failed cleaning up previous portfolio JSON blobs:", cleanupErr);
@@ -306,12 +351,14 @@ export async function uploadPortfolioFile(
   const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
   const filename = `${Date.now()}-${safeName}`;
 
-  // 1. Primary: Vercel Blob (works both on Vercel and locally if BLOB_READ_WRITE_TOKEN is set)
-  if (hasBlobStorage()) {
+  // 1. Primary: Vercel Blob (works both on Vercel OIDC/RW token and locally if configured)
+  const blobCfg = getBlobConfig();
+  if (blobCfg) {
     const blob = await put(`uploads/${filename}`, file, {
       access: "public",
       addRandomSuffix: true,
       contentType: file.type || undefined,
+      ...blobCfg,
     });
     return { url: blob.url, provider: "vercel-blob" };
   }
